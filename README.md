@@ -1,3 +1,29 @@
+# My modification
+pip install opus-fast-mosestokenizer
+failed, not support Windows, tried the following:
+  ```
+  pip install wheel
+  pip install CMake
+  ```
+  regedit:
+  Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem
+  LongPathsEnabled set to 1
+  Restart Windows
+  But still failed with:
+  FileTracker : error FTK1011: could not create the new file tracking log file: C:\Users\ChrisTorng\AppData\Local\Temp\pip-install-r1i3p7cy\opus-fast-mosestokenizer_69b067ab4e0544d2a98d35c89caeede2\build\temp.win-amd64-cpython-311\Release\CMakeFiles\CMakeScratch\TryCompile-loxtex\cmTC_d5115.dir\Debug\cmTC_d5115.tlog\link-cvtres.write.1.tlog. The system cannot find the path specified. [C:\Users\ChrisTorng\AppData\Local\Temp\pip-install-r1i3p7cy\opus-fast-mosestokenizer_69b067ab4e0544d2a98d35c89caeede2\build\temp.win-amd64-cpython-311\Release\CMakeFiles\CMakeScratch\TryCompile-loxtex\cmTC_d5115.vcxproj]
+
+pip install fast-mosestokenizer failed too
+Use wtpsplit instead
+mosestokenizer not working, commented
+
+print cp950 encoding not supported, set environment PYTHONIOENCODING=utf-8
+```
+pip install torch wtpsplit
+set PYTHONIOENCODING=utf-8
+python whisper_online.py audio\backyard.mp3 --language zh --model large-v2 --min-chunk-size 1 > audio\backyard.txt
+```
+
+
 # whisper_streaming
 Whisper realtime streaming for long speech-to-text transcription and translation
 
@@ -30,10 +56,10 @@ It splits punctuated text to sentences by full stops, avoiding the dots that are
 The unused one does not have to be installed. We integrate the following segmenters, but suggestions for better alternatives are welcome.
 
 - `pip install opus-fast-mosestokenizer` for the languages with codes `as bn ca cs de el en es et fi fr ga gu hi hu is it kn lt lv ml mni mr nl or pa pl pt ro ru sk sl sv ta te yue zh`
-
 - `pip install tokenize_uk` for Ukrainian -- `uk`
 
 - for other languages, we integrate a good performing multi-lingual model of `wtpslit`. It requires `pip install torch wtpsplit`, and its neural model `wtp-canine-s-12l-no-adapters`. It is downloaded to the default huggingface cache during the first use. 
+  Use this instead
 
 - we did not find a segmenter for languages `as ba bo br bs fo haw hr ht jw lb ln lo mi nn oc sa sd sn so su sw tk tl tt` that are supported by Whisper and not by wtpsplit. The default fallback option for them is wtpsplit with unspecified language. Alternative suggestions welcome.
 

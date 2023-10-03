@@ -431,9 +431,9 @@ def create_tokenizer(lan):
         return UkrainianTokenizer()
 
     # supported by fast-mosestokenizer
-    if lan in "as bn ca cs de el en es et fi fr ga gu hi hu is it kn lt lv ml mni mr nl or pa pl pt ro ru sk sl sv ta te yue zh".split():
-        from mosestokenizer import MosesTokenizer
-        return MosesTokenizer(lan)
+    # if lan in "as bn ca cs de el en es et fi fr ga gu hi hu is it kn lt lv ml mni mr nl or pa pl pt ro ru sk sl sv ta te yue zh".split():
+    #     from mosestokenizer import MosesTokenizer
+    #     return MosesTokenizer(lan)
 
     # the following languages are in Whisper, but not in wtpsplit:
     if lan in "as ba bo br bs fo haw hr ht jw lb ln lo mi nn oc sa sd sn so su sw tk tl tt".split():
@@ -539,6 +539,8 @@ if __name__ == "__main__":
         if o[0] is not None:
             print("%1.4f %1.0f %1.0f %s" % (now*1000, o[0]*1000,o[1]*1000,o[2]),file=sys.stderr,flush=True)
             print("%1.4f %1.0f %1.0f %s" % (now*1000, o[0]*1000,o[1]*1000,o[2]),flush=True)
+            # print("%1.4f %1.0f %1.0f %s" % (now*1000, o[0]*1000,o[1]*1000,o[2]),flush=True,encoding="utf-8")
+            # for Python 3.10.0 later?
         else:
             print(o,file=sys.stderr,flush=True)
 
