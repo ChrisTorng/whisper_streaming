@@ -3,30 +3,43 @@ import wave
 import io
 from whisper_online import *
 
+# Delete all audio files in temp folder
+import os
+import glob
+files = glob.glob('audio/temp/*.wav')
+for f in files:
+    os.remove(f)
+
+last_time = time.time()
+def printt(text):
+	global last_time
+	print(f"{(time.time() - last_time):.3f} {text}")
+	last_time = time.time()
+
 # Parameters
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000 # 8000, 16000, 32000
-FRAMES_PER_BUFFER = 32000 # 320
+FRAMES_PER_BUFFER = RATE * 5 # 320
 
 src_lan = "zh"  # source language
 # tgt_lan = "en"  # target language  -- same as source for ASR, "en" if translate task is used
 
-
+printt("loading")
 asr = FasterWhisperASR(src_lan, "small")  # loads and wraps Whisper model
 # set options:
 # asr.set_translate_task()  # it will translate from lan into English
-# asr.use_vad()  # set using VAD 
+asr.use_vad()  # set using VAD 
 
 # online = OnlineASRProcessor(tgt_lan, asr)  # create processing object
 
 pa = pyaudio.PyAudio()
 stream = pa.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=FRAMES_PER_BUFFER)
-print("starting")
+printt("listening")
 
 while True:   # processing loop:
 	audio_frames = stream.read(FRAMES_PER_BUFFER)
-	print("audio chunk received")
+	printt("audio chunk received")
 
 	# audio_buffer = io.BytesIO()
 	# wf = wave.open(audio_buffer, 'wb')
@@ -44,6 +57,7 @@ while True:   # processing loop:
 	wf.setframerate(RATE)
 	wf.writeframes(audio_frames)
 	wf.close()
+	printt("saved")
 	textlist = asr.transcribe(audio_recorded_filename, init_prompt="繁體中文台灣用語")
 
 	# audio_data = np.ndarray(buffer=audio_frames, dtype=np.int16, shape=(FRAMES_PER_BUFFER, ))
@@ -53,7 +67,9 @@ while True:   # processing loop:
 	# audio_stream = io.BytesIO(audio_frames)
 	# textlist = asr.transcribe(audio_stream, init_prompt="繁體中文台灣用語")
 	
-	print(textlist)
+	for segment in textlist:
+		printt(segment.text)
+	# print(textlist)
 	# online.insert_audio_chunk(a)
 	# o = online.process_iter()
 	# print(o) # do something with current partial output
