@@ -1,7 +1,9 @@
 import pyaudio
 import wave
-import io
+# import io
 from whisper_online import *
+
+print("stderr", file=sys.stderr)
 
 # Delete all audio files in temp folder
 import os
@@ -20,7 +22,7 @@ def printt(text):
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000 # 8000, 16000, 32000
-FRAMES_PER_BUFFER = RATE * 5 # 320
+FRAMES_PER_BUFFER = int(RATE * 3) # 320
 
 src_lan = "zh"  # source language
 tgt_lan = "zh"  # target language  -- same as source for ASR, "en" if translate task is used
@@ -29,7 +31,7 @@ printt("loading")
 asr = FasterWhisperASR(src_lan, "small")  # loads and wraps Whisper model
 # set options:
 # asr.set_translate_task()  # it will translate from lan into English
-# asr.use_vad()  # set using VAD 
+asr.use_vad()  # set using VAD 
 
 online = OnlineASRProcessor(asr, create_tokenizer(tgt_lan))  # create processing object
 
@@ -50,14 +52,14 @@ while True:   # processing loop:
 	# wf.close()
 	# textlist = asr.transcribe(wf, init_prompt="繁體中文台灣用語")
 
-	# audio_recorded_filename = f'audio/temp/RECORDED-{str(time.time())}.wav'
-	# wf = wave.open(audio_recorded_filename, 'wb')
-	# wf.setnchannels(CHANNELS)
-	# wf.setsampwidth(pa.get_sample_size(FORMAT))
-	# wf.setframerate(RATE)
-	# wf.writeframes(audio_frames)
-	# wf.close()
-	# printt("saved")
+	audio_recorded_filename = f'audio/temp/RECORDED-{str(time.time())}.wav'
+	wf = wave.open(audio_recorded_filename, 'wb')
+	wf.setnchannels(CHANNELS)
+	wf.setsampwidth(pa.get_sample_size(FORMAT))
+	wf.setframerate(RATE)
+	wf.writeframes(audio_frames)
+	wf.close()
+	printt("saved")
 	# textlist = asr.transcribe(audio_recorded_filename, init_prompt="繁體中文台灣用語")
 
 	# audio_data = np.ndarray(buffer=audio_frames, dtype=np.int16, shape=(FRAMES_PER_BUFFER, ))
@@ -71,13 +73,13 @@ while True:   # processing loop:
 	# 	printt(segment.text)
 	# print(textlist)
 
-	online.insert_audio_chunk(audio_frames)
+	audio_array = np.frombuffer(audio_frames, dtype=np.float32)
+	online.insert_audio_chunk(audio_array)
 	o = online.process_iter()
 	print(o) # do something with current partial output
 
 # at the end of this audio processing
 o = online.finish()
 print(o)  # do something with the last output
-
 
 online.init()  # refresh if you're going to re-use the object for the next audio
