@@ -520,6 +520,9 @@ if __name__ == "__main__":
 
     # load the audio into the LRU cache before we start the timer
     a = load_audio_chunk(audio_path,0,1)
+    print(type(a),file=sys.stderr)
+    print(a.dtype,file=sys.stderr)
+    print(a.shape,file=sys.stderr)
 
     # warm up the ASR, because the very first transcribe takes much more time than the other
     asr.transcribe(a)
@@ -546,6 +549,9 @@ if __name__ == "__main__":
 
     if args.offline: ## offline mode processing (for testing/debugging)
         a = load_audio(audio_path)
+        print(type(a),file=sys.stderr)
+        print(a.dtype,file=sys.stderr)
+        print(a.shape,file=sys.stderr)
         online.insert_audio_chunk(a)
         try:
             o = online.process_iter()
@@ -584,6 +590,9 @@ if __name__ == "__main__":
                 time.sleep(min_chunk+end-now)
             end = time.time() - start
             a = load_audio_chunk(audio_path,beg,end)
+            print(type(a))
+            print(a.dtype)
+            print(a.shape)
             beg = end
             online.insert_audio_chunk(a)
 

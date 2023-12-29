@@ -22,7 +22,7 @@ def printt(text):
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000 # 8000, 16000, 32000
-FRAMES_PER_BUFFER = int(RATE * 3) # 320
+FRAMES_PER_BUFFER = int(RATE * 0.03) # 30ms=480, max supported tried
 
 src_lan = "zh"  # source language
 tgt_lan = "zh"  # target language  -- same as source for ASR, "en" if translate task is used
@@ -52,14 +52,14 @@ while True:   # processing loop:
 	# wf.close()
 	# textlist = asr.transcribe(wf, init_prompt="繁體中文台灣用語")
 
-	audio_recorded_filename = f'audio/temp/RECORDED-{str(time.time())}.wav'
-	wf = wave.open(audio_recorded_filename, 'wb')
-	wf.setnchannels(CHANNELS)
-	wf.setsampwidth(pa.get_sample_size(FORMAT))
-	wf.setframerate(RATE)
-	wf.writeframes(audio_frames)
-	wf.close()
-	printt("saved")
+	# audio_recorded_filename = f'audio/temp/RECORDED-{str(time.time())}.wav'
+	# wf = wave.open(audio_recorded_filename, 'wb')
+	# wf.setnchannels(CHANNELS)
+	# wf.setsampwidth(pa.get_sample_size(FORMAT))
+	# wf.setframerate(RATE)
+	# wf.writeframes(audio_frames)
+	# wf.close()
+	# printt("saved")
 	# textlist = asr.transcribe(audio_recorded_filename, init_prompt="繁體中文台灣用語")
 
 	# audio_data = np.ndarray(buffer=audio_frames, dtype=np.int16, shape=(FRAMES_PER_BUFFER, ))
@@ -74,6 +74,10 @@ while True:   # processing loop:
 	# print(textlist)
 
 	audio_array = np.frombuffer(audio_frames, dtype=np.float32)
+	print(type(audio_array),file=sys.stderr)
+	print(audio_array.dtype,file=sys.stderr)
+	print(audio_array.shape,file=sys.stderr)
+
 	online.insert_audio_chunk(audio_array)
 	o = online.process_iter()
 	print(o) # do something with current partial output
