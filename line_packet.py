@@ -2,8 +2,6 @@
 
 """Functions for sending and receiving individual lines of text over a socket.
 
-Used by marian-server-server.py to communicate with the Marian worker.
-
 A line is transmitted using one or more fixed-size packets of UTF-8 bytes
 containing:
 
@@ -11,12 +9,13 @@ containing:
 
   - Zero or more \0 bytes as required to pad the packet to PACKET_SIZE
 
+Originally from the UEDIN team of the ELITR project. 
 """
 
 PACKET_SIZE = 65536
 
 
-def send_one_line(socket, text):
+def send_one_line(socket, text, pad_zeros=False):
     """Sends a line of text over the given socket.
 
     The 'text' argument should contain a single line of text (line break
@@ -36,12 +35,12 @@ def send_one_line(socket, text):
     lines = text.splitlines()
     first_line = '' if len(lines) == 0 else lines[0]
     # TODO Is there a better way of handling bad input than 'replace'?
-    data = first_line.encode('utf-8', errors='replace') + b'\n\0'
+    data = first_line.encode('utf-8', errors='replace') + b'\n' + (b'\0' if pad_zeros else b'')
     for offset in range(0, len(data), PACKET_SIZE):
         bytes_remaining = len(data) - offset
         if bytes_remaining < PACKET_SIZE:
             padding_length = PACKET_SIZE - bytes_remaining
-            packet = data[offset:] + b'\0' * padding_length
+            packet = data[offset:] + (b'\0' * padding_length if pad_zeros else b'')
         else:
             packet = data[offset:offset+PACKET_SIZE]
         socket.sendall(packet)
