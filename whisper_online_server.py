@@ -154,6 +154,8 @@ class ServerProcessor:
             a = self.receive_audio_chunk()
             if a is None:
                 break
+
+            # print(f"inserting audio chunk {len(a)} {a[:10]}")
             self.online_asr_proc.insert_audio_chunk(a)
             o = online.process_iter()
             try:

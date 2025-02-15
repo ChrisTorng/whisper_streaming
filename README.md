@@ -1,18 +1,24 @@
-# Final steps
+# 2025/2/14 3070 steps
 
 Edit whisper_online.py Line 106/114 for GPU/CPU
 
 ```
 python -m venv .venv
-pip install librosa
+.venv\Scripts\activate
+pip install librosa sounddevice
 pip install faster-whisper
-pip install torch wtpsplit
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 set PYTHONIOENCODING=utf-8
-python whisper_online.py audio\backyard.mp3 --language zh --model small --min-chunk-size 1 > audio\backyard.txt
+python whisper_online.py audio\backyard.mp3 --language zh --model tiny --min-chunk-size 1 > audio\backyard.txt
+```
+
+## for whisper_streaming.py
+```cmd
+pip install pyaudio
 ```
 
 
-# My testing
+# Old version sentence segmentation install, not recommend now
 `pip install opus-fast-mosestokenizer`
 failed, not support Windows, tried the following:
   ```
@@ -36,7 +42,6 @@ pip install torch wtpsplit
 set PYTHONIOENCODING=utf-8
 python whisper_online.py audio\backyard.mp3 --language zh --model large-v2 --min-chunk-size 1 > audio\backyard.txt
 ```
-
 
 # whisper_streaming
 Whisper realtime streaming for long speech-to-text transcription and translation
