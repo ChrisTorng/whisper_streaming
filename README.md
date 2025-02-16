@@ -1,7 +1,5 @@
 # 2025/2/14 3070 steps
 
-Edit whisper_online.py Line 106/114 for GPU/CPU
-
 ```
 python -m venv .venv
 .venv\Scripts\activate
@@ -17,6 +15,34 @@ python whisper_online.py audio\backyard.mp3 --language zh --model tiny --min-chu
 pip install pyaudio
 ```
 
+
+# My previous experience
+
+Edit whisper_online.py Line 106/114 for GPU/CPU
+
+```cmd
+python -m venv .venv
+.venv\Scripts\Activate
+pip install librosa soundfile
+pip install faster-whisper
+pip install torch torchaudio
+```
+cudnn_ops64_9.dll
+  [cuDNN 9.7.0 Downloads | NVIDIA Developer](https://developer.nvidia.com/cudnn-downloads?target_os=Windows&target_arch=x86_64&target_version=Agnostic&cuda_version=12)
+  Windows - x86_64 - Tarball - 12 - Download
+  for CUDA 12
+  Unzip, delete others except bin
+  Add PATH to bin\
+
+cublas64_12.dll
+  Copy from site-packages\torch\bin
+  cublas64_12.dll/cublasLt64_12.dll
+  set path=%path%;…\bin
+
+
+```cmd
+python whisper_online.py audio\Dialog.wav --language zh --model small --min-chunk-size 1 > audio\Dialog.txt
+```
 
 # Old version sentence segmentation install, not recommend now
 `pip install opus-fast-mosestokenizer`

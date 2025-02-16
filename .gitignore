@@ -1,4 +1,5 @@
 audio/temp/*.wav
+audio/whisper_streaming*.wav
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
