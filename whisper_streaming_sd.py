@@ -1,6 +1,6 @@
 import sys
 import msvcrt
-import threading         # 新增 threading
+import threading
 import numpy as np
 import wave
 import sounddevice as sd
@@ -23,7 +23,7 @@ FRAMES_PER_BUFFER = int(RATE * WAIT_SECONDS) # 320
 src_lan = "zh"  # source language
 tgt_lan = "zh"  # target language  -- same as source for ASR, "en" if translate task is used
 
-# 新增：定義 process_iter() 執行狀態與 lock
+# 定義 process_iter() 執行狀態與 lock
 processing_lock = threading.Lock()
 processing_busy = False
 
@@ -35,7 +35,7 @@ def try_process():
         processing_busy = True
     beg_trans, end_trans, trans = online.process_iter()
     if beg_trans is not None:
-        print(f"{beg_trans:.3f} {end_trans:.3f} {trans}")
+        print(f"{beg_trans:.2f} {end_trans:.2f} {trans}")
     else:
         print("None")
     with processing_lock:
@@ -47,11 +47,11 @@ asr = FasterWhisperASR(src_lan, "turbo")  # loads and wraps Whisper model
 # online = OnlineASRProcessor(asr, create_tokenizer(tgt_lan))  # create processing object
 online = OnlineASRProcessor(asr)  # create processing object
 
-# 新增：累積錄音區塊的列表
-recorded_audio = []
+# # 累積錄音區塊的列表
+# recorded_audio = []
 
-# 新增：累積放大後(經 normalization)的錄音區塊
-normalized_audio = []
+# # 累積放大後(經 normalization)的錄音區塊
+# normalized_audio = []
 
 with sd.InputStream(samplerate=RATE, channels=CHANNELS, dtype='int16') as stream:
     printt("listening")
@@ -59,7 +59,7 @@ with sd.InputStream(samplerate=RATE, channels=CHANNELS, dtype='int16') as stream
     while True:   # processing loop:
         audio_frames, overflowed = stream.read(FRAMES_PER_BUFFER)
         # 累積錄音數據
-        recorded_audio.append(audio_frames.copy())
+        # recorded_audio.append(audio_frames.copy())
         # printt(f"audio chunk received: {len(audio_frames)} {overflowed} {audio_frames[:10]}")
         if overflowed:
             printt(f"audio chunk received: {len(audio_frames)} {overflowed}")
@@ -81,7 +81,7 @@ with sd.InputStream(samplerate=RATE, channels=CHANNELS, dtype='int16') as stream
 
         audio_array *= 25
         # 將 normalization 後的 audio_array 轉回 int16 並儲存
-        normalized_audio.append((audio_array * 32768).astype(np.int16))
+        # normalized_audio.append((audio_array * 32768).astype(np.int16))
 
         # printt(f"inserting audio chunk {len(audio_array)} {audio_array[:10]}")
         # printt(f"inserting audio chunk {len(audio_array)} *{25}")
@@ -96,30 +96,30 @@ with sd.InputStream(samplerate=RATE, channels=CHANNELS, dtype='int16') as stream
                 printt("Esc pressed, stopping recording")
                 break
 
-# 結束錄音後：存檔
-wav_data = np.concatenate(recorded_audio, axis=0)
-wav_file_path = "audio/whisper_streaming_sd.wav"
-with wave.open(wav_file_path, 'wb') as wf:
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(2)  # int16 -> 2 bytes
-    wf.setframerate(RATE)
-    wf.writeframes(wav_data.tobytes())
-printt(f"錄音存檔至 {wav_file_path}")
+# # 結束錄音後：存檔
+# wav_data = np.concatenate(recorded_audio, axis=0)
+# wav_file_path = "audio/whisper_streaming_sd.wav"
+# with wave.open(wav_file_path, 'wb') as wf:
+#     wf.setnchannels(CHANNELS)
+#     wf.setsampwidth(2)  # int16 -> 2 bytes
+#     wf.setframerate(RATE)
+#     wf.writeframes(wav_data.tobytes())
+# printt(f"錄音存檔至 {wav_file_path}")
 
-# 新增：存檔 normalization 後的音訊
-wav_normalized_data = np.concatenate(normalized_audio, axis=0)
-wav_normalized_file_path = "audio/whisper_streaming_sd_normalized.wav"
-with wave.open(wav_normalized_file_path, 'wb') as wf_norm:
-    wf_norm.setnchannels(CHANNELS)
-    wf_norm.setsampwidth(2)
-    wf_norm.setframerate(RATE)
-    wf_norm.writeframes(wav_normalized_data.tobytes())
-printt(f"放大後錄音存檔至 {wav_normalized_file_path}")
+# # 存檔 normalization 後的音訊
+# wav_normalized_data = np.concatenate(normalized_audio, axis=0)
+# wav_normalized_file_path = "audio/whisper_streaming_sd_normalized.wav"
+# with wave.open(wav_normalized_file_path, 'wb') as wf_norm:
+#     wf_norm.setnchannels(CHANNELS)
+#     wf_norm.setsampwidth(2)
+#     wf_norm.setframerate(RATE)
+#     wf_norm.writeframes(wav_normalized_data.tobytes())
+# printt(f"放大後錄音存檔至 {wav_normalized_file_path}")
 
 # at the end of this audio processing
 beg_trans, end_trans, trans = online.finish()
 if beg_trans is not None:
-    print(f"{beg_trans:.3f} {end_trans:.3f} {trans} finish") # do something with current partial output
+    print(f"{beg_trans:.2f} {end_trans:.2f} {trans} finish") # do something with current partial output
 else:
     print("None finish")
 

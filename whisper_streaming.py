@@ -43,7 +43,7 @@ def try_process():
     # 執行 process_iter() 呼叫
     beg_trans, end_trans, trans = online.process_iter()
     if beg_trans is not None:
-        print(f"{beg_trans:.3f} {end_trans:.3f} {trans}")
+        print(f"{beg_trans:.2f} {end_trans:.2f} {trans}")
     else:
         print("None")
     with processing_lock:
@@ -53,7 +53,7 @@ printt("loading")
 asr = FasterWhisperASR(src_lan, "turbo")  # loads and wraps Whisper model
 # set options:
 # asr.set_translate_task()  # it will translate from lan into English
-# asr.use_vad()  # set using VAD 
+asr.use_vad()  # set using VAD 
 
 # online = OnlineASRProcessor(asr, create_tokenizer(tgt_lan))  # create processing object
 online = OnlineASRProcessor(asr)  # create processing object
@@ -63,10 +63,10 @@ pa = pyaudio.PyAudio()
 stream = pa.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=FRAMES_PER_BUFFER)
 printt("listening")
 
-# 新增：累積錄音區塊的列表
-recorded_audio = []
-# 新增：累積放大後(經 normalization)的錄音區塊
-normalized_audio = []
+# # 新增：累積錄音區塊的列表
+# recorded_audio = []
+# # 新增：累積放大後(經 normalization)的錄音區塊
+# normalized_audio = []
 
 while True:   # processing loop:
     audio_frames = stream.read(FRAMES_PER_BUFFER, exception_on_overflow=True)
@@ -75,7 +75,7 @@ while True:   # processing loop:
     
     # 將原始錄音轉換為 numpy 陣列後累積(注意：pyaudio 回傳 bytes)
     raw_np = np.frombuffer(audio_frames, dtype=np.int16)
-    recorded_audio.append(raw_np)
+    # recorded_audio.append(raw_np)
 
     pcm_buffer = bytearray()
     pcm_buffer.extend(audio_frames)
@@ -93,8 +93,8 @@ while True:   # processing loop:
     #     printt(f"inserting audio chunk {len(audio_array)} *{gain}")
 
     audio_array *= 25
-    # 將 normalization 後的 audio_array 轉回 int16 並儲存
-    normalized_audio.append((audio_array * 32768).astype(np.int16))
+    # # 將 normalization 後的 audio_array 轉回 int16 並儲存
+    # normalized_audio.append((audio_array * 32768).astype(np.int16))
     
     # printt(f"inserting audio chunk {len(audio_array)} {audio_array[:10]}")
     # printt(f"inserting audio chunk {len(audio_array)} *{25}")
@@ -109,29 +109,29 @@ while True:   # processing loop:
             printt("Esc pressed, stopping recording")
             break
 
-# 結束錄音後：存檔
-wav_data = np.concatenate(recorded_audio, axis=0)
-wav_file_path = "audio/whisper_streaming.wav"
-with wave.open(wav_file_path, 'wb') as wf:
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(2)  # int16 -> 2 bytes
-    wf.setframerate(RATE)
-    wf.writeframes(wav_data.tobytes())
-printt(f"錄音存檔至 {wav_file_path}")
+# # 結束錄音後：存檔
+# wav_data = np.concatenate(recorded_audio, axis=0)
+# wav_file_path = "audio/whisper_streaming.wav"
+# with wave.open(wav_file_path, 'wb') as wf:
+#     wf.setnchannels(CHANNELS)
+#     wf.setsampwidth(2)  # int16 -> 2 bytes
+#     wf.setframerate(RATE)
+#     wf.writeframes(wav_data.tobytes())
+# printt(f"錄音存檔至 {wav_file_path}")
 
-wav_normalized_data = np.concatenate(normalized_audio, axis=0)
-wav_normalized_file_path = "audio/whisper_streaming_normalized.wav"
-with wave.open(wav_normalized_file_path, 'wb') as wf_norm:
-    wf_norm.setnchannels(CHANNELS)
-    wf_norm.setsampwidth(2)
-    wf_norm.setframerate(RATE)
-    wf_norm.writeframes(wav_normalized_data.tobytes())
-printt(f"放大後錄音存檔至 {wav_normalized_file_path}")
+# wav_normalized_data = np.concatenate(normalized_audio, axis=0)
+# wav_normalized_file_path = "audio/whisper_streaming_normalized.wav"
+# with wave.open(wav_normalized_file_path, 'wb') as wf_norm:
+#     wf_norm.setnchannels(CHANNELS)
+#     wf_norm.setsampwidth(2)
+#     wf_norm.setframerate(RATE)
+#     wf_norm.writeframes(wav_normalized_data.tobytes())
+# printt(f"放大後錄音存檔至 {wav_normalized_file_path}")
 
 # at the end of this audio processing
 beg_trans, end_trans, trans = online.finish()
 if beg_trans is not None:
-    print(f"{beg_trans:.3f} {end_trans:.3f} {trans} finish")  # do something with current partial output
+    print(f"{beg_trans:.2f} {end_trans:.2f} {trans} finish")  # do something with current partial output
 else:
 	print("None finish")
 
