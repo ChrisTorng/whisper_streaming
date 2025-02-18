@@ -1,10 +1,12 @@
 import sys
 import time
-import msvcrt
-import threading         # 新增 threading
+import threading
 import numpy as np
 import wave
 import pyaudio
+import select
+import tty
+import termios
 from whisper_online import *
 
 print("stderr", file=sys.stderr)
@@ -68,6 +70,10 @@ printt("listening")
 # # 新增：累積放大後(經 normalization)的錄音區塊
 # normalized_audio = []
 
+# 新增：設定 sys.stdin 為 cbreak 模式（適用於 non-Windows 平台）
+orig_settings = termios.tcgetattr(sys.stdin)
+tty.setcbreak(sys.stdin.fileno())
+
 while True:   # processing loop:
     audio_frames = stream.read(FRAMES_PER_BUFFER, exception_on_overflow=True)
 	# printt(f"audio chunk received: {len(audio_frames)} {audio_frames[:10]}")
@@ -102,12 +108,16 @@ while True:   # processing loop:
     # 呼叫 process_iter()，但若前一次尚未結束則不重覆執行
     threading.Thread(target=try_process).start()
 
-    # 結束錄音判斷：利用 msvcrt 檢查是否有鍵盤輸入
-    if msvcrt.kbhit():
-        key = msvcrt.getch()
-        if key == b'\x1b':  # Esc 鍵
+    # 使用 select 檢查 stdin 是否有輸入（非阻塞）
+    dr, _, _ = select.select([sys.stdin], [], [], 0)
+    if dr:
+        ch = sys.stdin.read(1)
+        if ch == '\x1b':  # Esc 按鍵
             printt("Esc pressed, stopping recording")
             break
+
+# 還原 stdin 原設定
+termios.tcsetattr(sys.stdin, termios.TCSADRAIN, orig_settings)
 
 # # 結束錄音後：存檔
 # wav_data = np.concatenate(recorded_audio, axis=0)
@@ -119,6 +129,7 @@ while True:   # processing loop:
 #     wf.writeframes(wav_data.tobytes())
 # printt(f"錄音存檔至 {wav_file_path}")
 
+# # 存檔 normalization 後的音訊
 # wav_normalized_data = np.concatenate(normalized_audio, axis=0)
 # wav_normalized_file_path = "audio/whisper_streaming_normalized.wav"
 # with wave.open(wav_normalized_file_path, 'wb') as wf_norm:

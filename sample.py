@@ -17,16 +17,15 @@ for i in range(0, len(whole_audo), 16000):
 	online.insert_audio_chunk(a)
 	beg_trans, end_trans, trans = online.process_iter()
 	if beg_trans is not None:
-		print(f"{beg_trans:.3f} {end_trans:.3f} {trans}") # do something with current partial output
+		print(f"{beg_trans:.2f} {end_trans:.2f} {trans}") # do something with current partial output
 	else:
 		print("None")
 
 # at the end of this audio processing
 beg_trans, end_trans, trans = online.finish()
 if beg_trans is not None:
-	print(f"{beg_trans:.3f} {end_trans:.3f} {trans} finnish") # do something with current partial output
+	print(f"{beg_trans:.2f} {end_trans:.2f} {trans} finnish") # do something with current partial output
 else:
 	print("None finish")
-
 
 online.init()  # refresh if you're going to re-use the object for the next audio
