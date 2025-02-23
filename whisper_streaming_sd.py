@@ -1,11 +1,8 @@
 import sys
 import threading
 import numpy as np
-import wave
 import sounddevice as sd
-import select
-import tty
-import termios
+from keyboard_handler import KeyboardHandler
 from whisper_online import *
 
 print("stderr", file=sys.stderr)
@@ -55,9 +52,8 @@ online = OnlineASRProcessor(asr)  # create processing object
 # # 累積放大後(經 normalization)的錄音區塊
 # normalized_audio = []
 
-# 新增：設定 sys.stdin 為 cbreak 模式（適用於 non-Windows 平台）
-orig_settings = termios.tcgetattr(sys.stdin)
-tty.setcbreak(sys.stdin.fileno())
+keyboard = KeyboardHandler()
+keyboard.init()
 
 with sd.InputStream(samplerate=RATE, channels=CHANNELS, dtype='int16') as stream:
     printt("listening")
@@ -95,16 +91,13 @@ with sd.InputStream(samplerate=RATE, channels=CHANNELS, dtype='int16') as stream
         # 呼叫 process_iter()，若前一次尚未完成則略過
         threading.Thread(target=try_process).start()
 
-        # 使用 select 檢查 stdin 是否有輸入（非阻塞）
-        dr, _, _ = select.select([sys.stdin], [], [], 0)
-        if dr:
-            ch = sys.stdin.read(1)
-            if ch == '\x1b':  # Esc 按鍵
-                printt("Esc pressed, stopping recording")
-                break
+        # 使用新的鍵盤檢查機制
+        if keyboard.check_key():
+            printt("Esc pressed, stopping recording")
+            break
 
-# 還原 stdin 原設定
-termios.tcsetattr(sys.stdin, termios.TCSADRAIN, orig_settings)
+# 還原鍵盤設定
+keyboard.restore()
 
 # # 結束錄音後：存檔
 # wav_data = np.concatenate(recorded_audio, axis=0)
